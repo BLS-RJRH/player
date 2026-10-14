@@ -2,6 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
+    <!-- ป้องกันการซูมหน้าจอเวลาจิ้มบนมือถือ -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ER&EMS RJRH BINGO - Player</title>
     <style>
@@ -9,7 +10,7 @@
 
         * {
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+            -webkit-tap-highlight-color: transparent; 
         }
 
         body {
@@ -33,7 +34,7 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* --- 1. หน้าจอลงทะเบียน (Login Screen) --- */
+        /* --- หน้าจอลงทะเบียน --- */
         #login-screen {
             display: flex;
             flex-direction: column;
@@ -94,7 +95,7 @@
             transform: scale(0.95);
         }
 
-        /* --- 2. หน้าจอเล่นเกม (Game Screen) --- */
+        /* --- หน้าจอเล่นเกม --- */
         #game-screen {
             display: none; 
             flex-direction: column;
@@ -122,6 +123,7 @@
             opacity: 0.8;
         }
 
+        /* กระดานบิงโก */
         .board-wrapper {
             flex: 1;
             display: flex;
@@ -194,37 +196,42 @@
 
         .star { font-size: 20px; margin-bottom: -5px; }
 
-        /* ปุ่ม BINGO */
+        /* --- ปุ่ม BINGO --- */
+        /* สถานะเริ่มต้น (สีเทา ยังกดไม่ได้ผล) */
         .btn-bingo {
-            background: linear-gradient(135deg, #d32f2f, #b71c1c);
-            color: white;
-            border: 2px solid #ff5252;
+            background: #555555;
+            color: #aaaaaa;
+            border: 2px solid #777777;
             padding: 15px;
             font-size: 28px;
             font-weight: 900;
             border-radius: 15px;
             text-align: center;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        /* สถานะที่ผ่านเงื่อนไข (สีแดงกระพริบ) */
+        .btn-bingo.active-bingo {
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+            color: white;
+            border: 2px solid #ff5252;
             box-shadow: 0 5px 15px rgba(211, 47, 47, 0.5);
             text-shadow: 2px 2px 0px rgba(0,0,0,0.3);
-            margin-bottom: 10px;
-            transition: all 0.3s ease;
+            animation: pulse-bingo 1s infinite;
         }
-        
-        .btn-bingo:active:not(.disabled) {
+
+        .btn-bingo.active-bingo:active {
             transform: scale(0.98);
         }
 
-        /* สถานะปุ่มตอนยังไม่บิงโก (สีเทา) */
-        .btn-bingo.disabled {
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            box-shadow: none;
-            text-shadow: none;
-            pointer-events: none; /* ห้ามกด */
+        @keyframes pulse-bingo {
+            0% { transform: scale(1); box-shadow: 0 5px 15px rgba(211, 47, 47, 0.5); }
+            50% { transform: scale(1.02); box-shadow: 0 5px 25px rgba(211, 47, 47, 0.9); }
+            100% { transform: scale(1); box-shadow: 0 5px 15px rgba(211, 47, 47, 0.5); }
         }
 
-        /* --- 3. หน้าจอเรียกพนักงาน (Flashing Screen) --- */
+        /* --- หน้าจอเรียกพนักงาน --- */
         #winner-screen {
             display: none; 
             position: fixed;
@@ -271,7 +278,7 @@
 </head>
 <body>
 
-    <!-- หน้าจอใส่ชื่อ -->
+    <!-- หน้าจอลงทะเบียน -->
     <div id="login-screen">
         <img src="cls_logo.png" class="login-logo" alt="Logo" onerror="this.style.display='none'">
         <div class="login-title">ER&EMS RJRH<br>BINGO</div>
@@ -295,15 +302,15 @@
                 <div class="col-header">O</div>
             </div>
             <div class="board-grid" id="boardGrid">
-                <!-- ช่องตารางจะถูกสร้างด้วย Javascript -->
+                <!-- ตารางจาก Javascript -->
             </div>
         </div>
 
-        <!-- ปุ่มจะเริ่มในสถานะถูกล็อก (disabled) -->
-        <div class="btn-bingo disabled" id="btnBingo" onclick="callBingo()">รอกาให้ครบรูปแบบ...</div>
+        <!-- ปุ่มแจ้ง BINGO เปลี่ยนฟังก์ชันไปตรวจสอบก่อน -->
+        <div class="btn-bingo" id="btnBingo" onclick="attemptBingo()">แจ้ง BINGO!</div>
     </div>
 
-    <!-- หน้าจอเอฟเฟกต์ตอนกด BINGO -->
+    <!-- หน้าจอกระพริบเรียกเจ้าหน้าที่ -->
     <div id="winner-screen">
         <h1 class="winner-text">BINGO!</h1>
         <div class="winner-name" id="winnerNameDisplay">ชื่อผู้เล่น</div>
@@ -313,30 +320,6 @@
     </div>
 
     <script>
-        // กำหนดรูปแบบที่ชนะทั้งหมด (ดัชนี 0-24 ของตาราง 5x5)
-        const winningPatterns = [
-            // 1. แนวนอน (Horizontal)
-            [0, 1, 2, 3, 4],
-            [5, 6, 7, 8, 9],
-            [10, 11, 12, 13, 14],
-            [15, 16, 17, 18, 19],
-            [20, 21, 22, 23, 24],
-            // 2. แนวตั้ง (Vertical)
-            [0, 5, 10, 15, 20],
-            [1, 6, 11, 16, 21],
-            [2, 7, 12, 17, 22],
-            [3, 8, 13, 18, 23],
-            [4, 9, 14, 19, 24],
-            // 3 & 4. แนวทแยง (Diagonal)
-            [0, 6, 12, 18, 24],
-            [4, 8, 12, 16, 20],
-            // 5. มุมนอก 4 ด้าน (Outer 4 Corners)
-            [0, 4, 20, 24],
-            // 6. มุมใน 4 ด้านล้อมฟรีสเปซ (Inner 4 Corners)
-            [6, 8, 16, 18]
-        ];
-
-        // สุ่มตัวเลขไม่ซ้ำ
         function getUniqueNumbers(count, min, max) {
             const nums = new Set();
             while(nums.size < count) {
@@ -345,7 +328,6 @@
             return Array.from(nums);
         }
 
-        // เริ่มเกม
         function startGame() {
             const nameInput = document.getElementById('playerNameInput').value.trim();
             if (nameInput === "") {
@@ -358,100 +340,108 @@
 
             generateBoard();
 
-            // สลับหน้าจอ
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'flex';
         }
 
-        // สร้างกระดานบิงโก
         function generateBoard() {
             const grid = document.getElementById('boardGrid');
             grid.innerHTML = ''; 
-            
-            let cellIndex = 0; // ใช้เพื่ออ้างอิงลำดับ 0-24
 
             const data = {
                 B: getUniqueNumbers(5, 1, 15),
                 I: getUniqueNumbers(5, 16, 30),
-                N: getUniqueNumbers(4, 31, 45), 
+                N: getUniqueNumbers(4, 31, 45),
                 G: getUniqueNumbers(5, 46, 60),
                 O: getUniqueNumbers(5, 61, 75)
             };
 
             for (let row = 0; row < 5; row++) {
-                grid.appendChild(createCell(data.B[row], cellIndex++));
-                grid.appendChild(createCell(data.I[row], cellIndex++));
+                grid.appendChild(createCell(data.B[row]));
+                grid.appendChild(createCell(data.I[row]));
                 
                 if (row === 2) {
-                    // ช่องฟรีตรงกลาง (ถูกเลือกไว้แต่แรก)
+                    // ล๊อคช่อง Free (ไม่มี onclick)
                     const freeCell = document.createElement('div');
                     freeCell.className = 'cell free-space marked'; 
-                    freeCell.dataset.index = cellIndex++;
-                    freeCell.innerHTML = '<span class="star">★</span><span>FREE</span>';
-                    freeCell.onclick = function() { 
-                        this.classList.toggle('marked'); 
-                        checkBingoCondition();
-                    };
+                    freeCell.innerHTML = '<span class="star">★</span><span>RJRH</span>';
                     grid.appendChild(freeCell);
                 } else {
                     let nIndex = row < 2 ? row : row - 1;
-                    grid.appendChild(createCell(data.N[nIndex], cellIndex++));
+                    grid.appendChild(createCell(data.N[nIndex]));
                 }
 
-                grid.appendChild(createCell(data.G[row], cellIndex++));
-                grid.appendChild(createCell(data.O[row], cellIndex++));
+                grid.appendChild(createCell(data.G[row]));
+                grid.appendChild(createCell(data.O[row]));
             }
             
-            // เช็คสถานะปุ่มครั้งแรกสุด
-            checkBingoCondition();
+            // เช็คสถานะปุ่มตั้งแต่เริ่ม (เผื่อไว้)
+            verifyBingoState();
         }
 
-        // สร้างช่องตัวเลข 1 ช่อง พร้อมเก็บหมายเลข Index ของช่องนั้น
-        function createCell(number, index) {
+        function createCell(number) {
             const div = document.createElement('div');
             div.className = 'cell';
-            div.dataset.index = index;
             div.innerText = number;
-            
             div.onclick = function() {
                 this.classList.toggle('marked');
-                checkBingoCondition(); // เช็คแพทเทิร์นทุกครั้งที่มีการกด
+                verifyBingoState(); // ตรวจสอบเงื่อนไขทันทีที่กดกาตัวเลข
             };
             return div;
         }
 
-        // ฟังก์ชันตรวจสอบรูปแบบที่ชนะ
-        function checkBingoCondition() {
-            const cells = document.querySelectorAll('.cell');
-            const btnBingo = document.getElementById('btnBingo');
+        // --- ระบบตรวจสอบเงื่อนไขการชนะ BINGO ---
+        function checkWinningPatterns() {
+            // ดึงข้อมูลเซลล์ทั้งหมด 25 ช่องแบบ Array
+            const cells = Array.from(document.querySelectorAll('.cell'));
+            // แปลงเป็น Array ค่า True/False ว่าช่องนั้นถูกกา (marked) หรือไม่
+            const m = cells.map(cell => cell.classList.contains('marked'));
             
-            // เช็คว่ามีรูปแบบไหนเข้าเงื่อนไขบ้าง (รูปแบบใดรูปแบบหนึ่ง)
-            const isWinner = winningPatterns.some(pattern => {
-                // ตรวจสอบว่าช่องในแพทเทิร์นนั้นๆ ถูกใส่คลาส 'marked' ครบทุกช่องหรือไม่
-                return pattern.every(index => cells[index].classList.contains('marked'));
-            });
+            if(m.length !== 25) return false;
 
-            // ปลดล็อกหรือล็อกปุ่ม
-            if (isWinner) {
-                btnBingo.classList.remove('disabled');
-                btnBingo.innerText = "แจ้ง BINGO!";
-            } else {
-                btnBingo.classList.add('disabled');
-                btnBingo.innerText = "รอกาให้ครบรูปแบบ...";
+            // 1. เช็คแนวนอน (Horizontal) 5 แถว
+            for(let r = 0; r < 5; r++) {
+                if(m[r*5] && m[r*5+1] && m[r*5+2] && m[r*5+3] && m[r*5+4]) return true;
             }
+            // 2. เช็คแนวตั้ง (Vertical) 5 คอลัมน์
+            for(let c = 0; c < 5; c++) {
+                if(m[c] && m[c+5] && m[c+10] && m[c+15] && m[c+20]) return true;
+            }
+            // 3. เช็คแนวทแยงมุมซ้ายบนลงขวาล่าง
+            if(m[0] && m[6] && m[12] && m[18] && m[24]) return true;
+            // 4. เช็คแนวทแยงมุมขวาบนลงซ้ายล่าง
+            if(m[4] && m[8] && m[12] && m[16] && m[20]) return true;
+            
+            // 5. เช็คมุมทั้ง 4 ด้านนอก (Outer 4 Corners)
+            if(m[0] && m[4] && m[20] && m[24]) return true;
+            
+            // 6. เช็คมุมทั้ง 4 ด้านใน (Inner 4 Corners - ติดกับช่อง Free)
+            if(m[6] && m[8] && m[16] && m[18]) return true;
+
+            return false;
         }
 
-        // เมื่อกดปุ่มแจ้ง BINGO
-        function callBingo() {
+        // เปิด-ปิดการทำงานของปุ่ม BINGO
+        function verifyBingoState() {
             const btn = document.getElementById('btnBingo');
-            if (btn.classList.contains('disabled')) return; // ห้ามทำงานถ้าปุ่มโดนล็อกอยู่
-
-            if(confirm("ระบบตรวจสอบพบว่าคุณกากบาทครบรูปแบบแล้ว ยืนยันที่จะแจ้ง BINGO หรือไม่?")) {
-                document.getElementById('winner-screen').style.display = 'flex';
+            if (checkWinningPatterns()) {
+                btn.classList.add('active-bingo'); // เพิ่มคลาสสีแดงกระพริบ
+            } else {
+                btn.classList.remove('active-bingo'); // กลับไปเป็นสีเทา
             }
         }
 
-        // ปิดหน้าจอ BINGO
+        // เมื่อผู้เล่นพยายามกดปุ่ม BINGO
+        function attemptBingo() {
+            if (checkWinningPatterns()) {
+                // ถ้าผ่านเงื่อนไข ให้กระพริบจอเรียกเจ้าหน้าที่เลย (ไม่ต้อง Confirm)
+                document.getElementById('winner-screen').style.display = 'flex';
+            } else {
+                // ถ้ายังไม่ผ่านเงื่อนไขแต่พยายามกด
+                alert("รูปแบบยังไม่ถูกต้องครับ! \nคุณต้องกาให้ครบ 5 ช่องเรียงกัน หรือ กาครบ 4 มุมนอก/4 มุมใน");
+            }
+        }
+
         function closeBingoScreen() {
             document.getElementById('winner-screen').style.display = 'none';
         }
