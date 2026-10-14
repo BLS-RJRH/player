@@ -6,7 +6,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>ER&EMS RJRH BINGO - Player</title>
+    <title> BINGO - Player</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700;900&display=swap');
 
@@ -289,7 +289,7 @@
 
     <div id="login-screen">
         <img src="cls_logo.png" class="login-logo" alt="Logo" onerror="this.style.display='none'">
-        <div class="login-title">ER&EMS RJRH<br>BINGO</div>
+        <div class="login-title"><br>BINGO</div>
         <input type="text" id="playerNameInput" class="name-input" placeholder="พิมพ์ชื่อของคุณที่นี่..." autocomplete="off">
         <button class="btn-start" onclick="startGame()">เข้าสู่เกมเพลย์</button>
     </div>
@@ -297,7 +297,7 @@
     <div id="game-screen">
         <div class="top-bar">
             <div class="player-name-display">👤 <span id="displayName">ผู้เล่น</span></div>
-            <div class="small-title">ER&EMS RJRH</div>
+            <div class="small-title">BINGO</div>
         </div>
 
         <div class="board-wrapper">
@@ -367,7 +367,7 @@
                 if (row === 2) {
                     const freeCell = document.createElement('div');
                     freeCell.className = 'cell free-space marked'; 
-                    freeCell.innerHTML = '<span class="star">★</span><span>RJRH</span>';
+                    freeCell.innerHTML = '<span class="star">★</span><span>FREE</span>';
                     grid.appendChild(freeCell);
                 } else {
                     let nIndex = row < 2 ? row : row - 1;
