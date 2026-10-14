@@ -6,7 +6,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>BINGO - Player</title>
+    <title>ER&EMS RJRH BINGO - Player</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700;900&display=swap');
 
@@ -15,14 +15,22 @@
             -webkit-tap-highlight-color: transparent; 
         }
 
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: 'Sarabun', sans-serif;
             background: linear-gradient(135deg, #000c19, #001f3f, #003366, #001f3f);
             background-size: 400% 400%;
             animation: gradientBG 20s ease infinite;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
+            
+            /* แก้ปัญหาปุ่มโดนตัดด้วย dynamic viewport height */
+            height: 100vh; /* Fallback สำหรับเบราว์เซอร์เก่า */
+            height: 100dvh; /* สำหรับเบราว์เซอร์มือถือสมัยใหม่ */
+            
             width: 100vw;
             display: flex;
             flex-direction: column;
@@ -41,7 +49,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            height: 100%;
             padding: 20px;
             text-align: center;
         }
@@ -99,7 +107,7 @@
         #game-screen {
             display: none; 
             flex-direction: column;
-            height: 100vh;
+            height: 100%;
             padding: 10px;
         }
 
@@ -107,8 +115,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 5px;
-            margin-bottom: 10px;
+            padding: 5px; /* ลด Padding ให้ประหยัดพื้นที่ */
+            margin-bottom: 5px;
+            flex-shrink: 0;
         }
 
         .player-name-display {
@@ -132,7 +141,8 @@
             padding: 10px;
             border: 1px solid rgba(255, 215, 0, 0.3);
             box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            margin-bottom: 15px;
+            margin-bottom: 10px; /* ลดระยะห่างด้านล่าง */
+            min-height: 0; /* สำคัญ: เพื่อให้ตารางหดตัวได้ในจอมือถือเล็กๆ */
         }
 
         .board-header-row {
@@ -140,12 +150,13 @@
             grid-template-columns: repeat(5, 1fr);
             gap: 5px;
             margin-bottom: 10px;
+            flex-shrink: 0;
         }
 
         .col-header {
             text-align: center;
             font-weight: 900;
-            font-size: 24px;
+            font-size: 22px;
             color: #FFD700;
             text-shadow: 1px 1px 2px #000;
         }
@@ -156,6 +167,7 @@
             grid-template-columns: repeat(5, 1fr);
             grid-template-rows: repeat(5, 1fr);
             gap: 5px;
+            min-height: 0;
         }
 
         .cell {
@@ -165,11 +177,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
             color: #fff;
             transition: all 0.2s ease;
             user-select: none;
+            height: 100%;
         }
 
         .cell.marked {
@@ -183,7 +196,7 @@
         .cell.free-space {
             background: rgba(255, 215, 0, 0.2);
             color: #FFD700;
-            font-size: 12px;
+            font-size: 11px;
             flex-direction: column;
             border: 1px solid rgba(255, 215, 0, 0.5);
         }
@@ -193,18 +206,19 @@
             color: #001f3f;
         }
 
-        .star { font-size: 20px; margin-bottom: -5px; }
+        .star { font-size: 18px; margin-bottom: -5px; }
 
         .btn-bingo {
             background: #555555;
             color: #aaaaaa;
             border: 2px solid #777777;
-            padding: 15px;
-            font-size: 28px;
+            padding: 12px; /* ลด Padding เพื่อไม่ให้ปุ่มสูงเกินไป */
+            font-size: 26px; 
             font-weight: 900;
             border-radius: 15px;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 5px; /* ลด margin ล่างสุด */
+            flex-shrink: 0; /* ห้ามปุ่มหดตัว */
             transition: all 0.3s;
         }
 
@@ -230,7 +244,7 @@
         #winner-screen {
             display: none; 
             position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
+            top: 0; left: 0; width: 100vw; height: 100%;
             z-index: 10000;
             flex-direction: column;
             align-items: center;
@@ -275,7 +289,7 @@
 
     <div id="login-screen">
         <img src="cls_logo.png" class="login-logo" alt="Logo" onerror="this.style.display='none'">
-        <div class="login-title"><br>BINGO</div>
+        <div class="login-title">ER&EMS RJRH<br>BINGO</div>
         <input type="text" id="playerNameInput" class="name-input" placeholder="พิมพ์ชื่อของคุณที่นี่..." autocomplete="off">
         <button class="btn-start" onclick="startGame()">เข้าสู่เกมเพลย์</button>
     </div>
@@ -283,7 +297,7 @@
     <div id="game-screen">
         <div class="top-bar">
             <div class="player-name-display">👤 <span id="displayName">ผู้เล่น</span></div>
-            <div class="small-title">BINGO</div>
+            <div class="small-title">ER&EMS RJRH</div>
         </div>
 
         <div class="board-wrapper">
