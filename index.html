@@ -342,7 +342,7 @@
         <div class="top-bar">
             <div class="player-info">
                 <div class="player-name-display">👤 <span id="displayName">ผู้เล่น</span></div>
-                <div class="card-id-display">การ์ด ID: #<span id="cardIdDisplay">1</span> (จาก 400 แบบ)</div>
+                <div class="card-id-display">การ์ด ID: #<span id="cardIdDisplay">1</span></div>
             </div>
             <!-- แสดงรอบเกมปัจจุบันบนหัวมุมซ้าย/ขวา -->
             <div class="round-display-badge" id="gameRoundBadge">รอบที่ 1</div>
@@ -467,7 +467,7 @@
                 if (row === 2) {
                     const freeCell = document.createElement('div');
                     freeCell.className = 'cell free-space marked'; 
-                    freeCell.innerHTML = '<span class="star">★</span><span>RJRH</span>';
+                    freeCell.innerHTML = '<span class="star">★</span><span>FREE</span>';
                     grid.appendChild(freeCell);
                 } else {
                     let nIndex = row < 2 ? row : row - 1;
